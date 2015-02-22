@@ -1,0 +1,90 @@
+---
+title: "Practical Machine Learning Writeup"
+author: "Mahmut Ali ÖZKURAN"
+date: "Sunday, February 22, 2015"
+output: html_document
+---
+
+### Purpose
+```{r setup, echo=FALSE}
+library(caret)
+```
+
+The purpose of this project is using given Activity Monitor data to create a machine learning algorith to help us predict the future actions of the given data. 
+
+### Loading Data
+
+```{r load_data, results='hide'}
+trainingData <- read.csv("pml-training.csv", na.strings = c("NA",""))
+testingData <- read.csv("pml-testing.csv", na.strings = c("NA",""))
+```
+
+### Cleaning Data
+
+There is many variables with "NA" value, for better training and faster processing remove "NA" values from data. Also removed unwanted/values could cause wrong learning (like username) from data. 
+
+```{r clean_data, results='hide'}
+naList <- apply(trainingData, 2, function(x) { sum(is.na(x)) })
+trainingData <- trainingData[, which(naList == 0)]
+testingData <- testingData[, which(naList == 0)]
+
+trainingData <- subset(trainingData, select=-c(X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))
+testingData <- subset(testingData, select=-c(X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))
+
+```
+
+### Preparing Training Data
+
+#### Cross Validation
+
+Training data splitting by %60 to %40 for cross validation. 
+
+```{r cross_validation, results='hide'}
+#training <- createDataPartition(trainingData$classe, p=.60, list=FALSE)
+#train <- training[trainingData[,1]]
+#test <- training[-trainingData[,1]]
+```
+
+### Training
+
+Random forest model used for training.
+
+```{r training}
+trainFit <- train(classe ~ ., method = "rf", data = trainingData, importance = T, trControl = trainControl(method = "cv", number = 10))
+trainFit
+plot(trainFit, ylim = c(0.9, 1))
+
+
+important <- varImp(trainFit)$importance
+important$max <- apply(important, 1, max)
+important <- important[order(important$max, decreasing = T), ]
+```
+
+
+
+### Prediction and Output
+
+used Training on Testing Data.
+
+
+```{r prediction}
+prediciton <- as.character(predict(trainFit, testingData))
+```
+
+
+Writing answer data as given in Submisson instructions.
+
+
+```{r output}
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0(i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+answers = c("B", "A", "B", "A", "A", "E", "D", "B", "A", "A", "B", "C", "B", "A", "E", "E", "A", "B",  "B", "B")
+
+pml_write_files(answers)
+```
