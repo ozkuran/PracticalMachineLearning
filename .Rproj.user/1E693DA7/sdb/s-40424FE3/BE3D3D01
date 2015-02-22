@@ -1,0 +1,17 @@
+{
+    "contents" : "\n\nlibrary(caret)\ntrainingData <- read.csv(\"pml-training.csv\", na.strings = c(\"NA\",\"\"))\ntestingData <- read.csv(\"pml-testing.csv\", na.strings = c(\"NA\",\"\"))\nnaList <- apply(trainingData, 2, function(x) { sum(is.na(x)) })\ntrainingData <- trainingData[, which(naList == 0)]\ntestingData <- testingData[, which(naList == 0)]\n\ntrainingData <- subset(trainingData, select=-c(X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))\ntestingData <- subset(testingData, select=-c(X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))\nmytrControl = trainControl(method = \"cv\", number = 4)\nmodelFit <- train(trainingData$classe ~ ., data = trainingData, method = \"rf\", trControl = mytrControl)\n",
+    "created" : 1424565925402.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1052574840",
+    "id" : "BE3D3D01",
+    "lastKnownWriteTime" : 1424571032,
+    "path" : "D:/GitHub/PracticalMachineLearning/report.R",
+    "project_path" : "report.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

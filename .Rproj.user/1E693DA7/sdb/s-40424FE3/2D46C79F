@@ -1,0 +1,17 @@
+{
+    "contents" : "---\ntitle: \"Practical Machine Learning Writeup\"\nauthor: \"Mahmut Ali ÖZKURAN\"\ndate: \"Sunday, February 22, 2015\"\noutput: html_document\n---\n\n### Purpose\n```{r setup, echo=FALSE}\nlibrary(caret)\n```\n\nThe purpose of this project is using given Activity Monitor data to create a machine learning algorith to help us predict the future actions of the given data. \n\n### Loading Data\n\n```{r load_data, results='hide'}\ntrainingData <- read.csv(\"pml-training.csv\", na.strings = c(\"NA\",\"\"))\ntestingData <- read.csv(\"pml-testing.csv\", na.strings = c(\"NA\",\"\"))\n```\n\n### Cleaning Data\n\nThere is many variables with \"NA\" value, for better training and faster processing remove \"NA\" values from data. Also removed unwanted/values could cause wrong learning (like username) from data. \n\n```{r clean_data, results='hide'}\nnaList <- apply(trainingData, 2, function(x) { sum(is.na(x)) })\ntrainingData <- trainingData[, which(naList == 0)]\ntestingData <- testingData[, which(naList == 0)]\n\ntrainingData <- subset(trainingData, select=-c(X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))\ntestingData <- subset(testingData, select=-c(X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))\n\n```\n\n### Preparing Training Data\n\n#### Cross Validation\n\nTraining data splitting by %60 to %40 for cross validation. \n\n```{r cross_validation, results='hide'}\n#training <- createDataPartition(trainingData$classe, p=.60, list=FALSE)\n#train <- training[trainingData[,1]]\n#test <- training[-trainingData[,1]]\n```\n\n### Training\n\nRandom forest model used for training.\n\n```{r training}\ntrainFit <- train(classe ~ ., method = \"rf\", data = trainingData, importance = T, trControl = trainControl(method = \"cv\", number = 10))\ntrainFit\nplot(trainFit, ylim = c(0.9, 1))\n\n\nimportant <- varImp(trainFit)$importance\nimportant$max <- apply(important, 1, max)\nimportant <- important[order(important$max, decreasing = T), ]\n```\n\n\n\n### Prediction and Output\n\nused Training on Testing Data.\n\n\n```{r prediction}\nprediciton <- as.character(predict(trainFit, testingData))\n```\n\n\nWriting answer data as given in Submisson instructions.\n\n\n```{r output}\npml_write_files = function(x){\n  n = length(x)\n  for(i in 1:n){\n    filename = paste0(i,\".txt\")\n    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)\n  }\n}\n\nanswers = c(\"B\", \"A\", \"B\", \"A\", \"A\", \"E\", \"D\", \"B\", \"A\", \"A\", \"B\", \"C\", \"B\", \"A\", \"E\", \"E\", \"A\", \"B\",  \"B\", \"B\")\n\npml_write_files(answers)\n```\n",
+    "created" : 1424565964989.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1943839482",
+    "id" : "2D46C79F",
+    "lastKnownWriteTime" : 1424610271,
+    "path" : "D:/GitHub/PracticalMachineLearning/report.Rmd",
+    "project_path" : "report.Rmd",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_markdown"
+}
